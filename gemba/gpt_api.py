@@ -1,3 +1,4 @@
+import pdb
 import time
 from termcolor import colored
 from datetime import datetime
@@ -5,6 +6,7 @@ import os
 
 from dotenv import load_dotenv, find_dotenv
 from src.paths import paths
+
 
 load_dotenv(find_dotenv(paths.PROJECT_ROOT_DIR / "secrets.env"), override=True)
 load_dotenv(find_dotenv(paths.PROJECT_ROOT_DIR / "vars.env"), override=True)
@@ -36,7 +38,7 @@ class GptApi:
     def request(
         self, prompt, model, parse_response, temperature=0, answer_id=-1, cache=None
     ):
-        max_tokens = 20
+        max_tokens = 2000
         answers = None
         if cache is not None:
             prompt_key = prompt
@@ -84,9 +86,9 @@ class GptApi:
 
         parsed_answers = []
         for full_answer in answers:
-            finish_reason = full_answer["finish_reason"]
             full_answer = full_answer["answer"]
             answer_id += 1
+
             answer = parse_response(full_answer)
             if self.verbose or temperature > 0:
                 print(
@@ -104,13 +106,12 @@ class GptApi:
                     "answer_id": answer_id,
                     "answer": answer,
                     "prompt": prompt,
-                    "finish_reason": finish_reason,
                     "model": model,
                 }
             )
 
         # there was no valid answer, increase temperature and try again
-        if len(parsed_answers) == 0:
+        if len(parsed_answers) == 0 and temperature < 3:
             return self.request(
                 prompt,
                 model,
@@ -126,7 +127,7 @@ class GptApi:
         # if temperature is 0, then request only 1 response
         n = 1
 
-        if max_tokens > 500 or temperature > 10:
+        if max_tokens > 2000 or temperature > 10:
             return []
 
         dt = datetime.now()
@@ -154,25 +155,21 @@ class GptApi:
                 time.sleep(1)
 
         answers = []
-        for choice in response["choices"]:
-            answer = choice["message"]["content"].strip()
-            # one of the responses didn't finish, we need to request more tokens
-            if choice["finish_reason"] != "stop":  # TODO remove exception
-                if self.verbose:
-                    print(
-                        colored(f"Increasing max tokens to fit answers.", "red")
-                        + colored(answer, "blue")
-                    )
-                return self.request_api(
-                    prompt, model, temperature=temperature, max_tokens=max_tokens + 200
-                )
 
-            answers.append(
-                {
-                    "answer": answer,
-                    "finish_reason": choice["finish_reason"],
-                }
+        answer = response["data"].strip()
+        # one of the responses didn't finish, we need to request more tokens
+
+        if response["status"] != "SUCCESS":
+            if self.verbose:
+                print(
+                    colored(f"Increasing max tokens to fit answers.", "red")
+                    + colored(answer, "blue")
+                )
+            return self.request_api(
+                prompt, model, temperature=temperature, max_tokens=max_tokens + 200
             )
+
+        answers.append({"answer": answer})
 
         if len(answers) > 1:
             # remove duplicate answers
@@ -187,10 +184,12 @@ class GptApi:
                 prompt = [{"role": "assistant", "content": prompt}]
             elif isinstance(prompt, list):
                 pass
-            return model_obj.run(
+
+            response = model_obj.run(
                 data=prompt,
                 parameters={"max_tokens": max_tokens, "temperature": temperature / 10},
-            )["rawData"]
+            )
+            return response
 
     def bulk_request(self, df, model, parse_mqm_answer, cache, max_tokens=20):
         answers = []

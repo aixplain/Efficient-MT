@@ -356,7 +356,6 @@ async def get_next_sample_online(
 ## methods to get app stats
 @app.get("/get_cat_stats/")
 async def get_cat_stats():
-    pdb.set_trace()
     app.df = pd.read_csv("./data/temp_data.csv")
     df_stats_cat = pd.read_csv("./data/cat_stats.csv", index_col=None)
     app.df.to_csv("./data/temp_data.csv", index=False)

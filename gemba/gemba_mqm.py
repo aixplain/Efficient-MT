@@ -15,7 +15,7 @@ flags.DEFINE_string("target_lang", None, "Target language name.")
 flags.DEFINE_bool("verbose", False, "Verbose mode.")
 
 
-model = "gpt-4"
+model = "GPT-4o"
 
 
 def main(argv):

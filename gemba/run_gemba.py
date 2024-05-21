@@ -7,7 +7,7 @@ from gemba.cache import Cache
 def main():
     scenarios = [
         [
-            "ChatGPT",
+            "GPT-4o",
             "GEMBA-DA",
         ],
     ]
@@ -38,7 +38,9 @@ def main():
             "target_lang": language_codes[lng.split("-")[1]],
         }
         prompt = prompts[annotation]["prompt"].format(**data)
-        parsed_answers = gptapi.request(prompt, use_model, prompts[annotation]["validate_answer"], cache=cache)
+        parsed_answers = gptapi.request(
+            prompt, use_model, prompts[annotation]["validate_answer"], cache=cache
+        )
 
 
 if __name__ == "__main__":

@@ -1,0 +1,3 @@
+[submodule "wmt-mqm-human-evaluation"]
+	path = wmt-mqm-human-evaluation
+	url = https://github.com/google/wmt-mqm-human-evaluation.git

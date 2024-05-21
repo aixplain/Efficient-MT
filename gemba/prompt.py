@@ -1,3 +1,4 @@
+import pdb
 import re
 from termcolor import colored
 
@@ -101,7 +102,7 @@ language_codes = {
 
 def get_best_translation_propmt(source_seg, mts, source_lang, target_lang):
     # prepate a propmt string that will be used for selecting the best translation as the id of the translation
-    prompt = f'Please select the best translation from {source_lang} to {target_lang}.\n\n{source_lang} source: "{source_seg}"\n\n'
+    prompt = f'Please select the best translation from {source_lang} to {target_lang}.\n\n{source_lang} source: "{source_seg}. Return only integer index of the MT"\n\n'
     for i, mt in enumerate(mts):
         prompt += f'MT ID: {i} -> Translation: "{mt}"\n'
     prompt += f"\nBest MT ID:"
@@ -110,32 +111,32 @@ def get_best_translation_propmt(source_seg, mts, source_lang, target_lang):
 
 prompts = {
     "GEMBA-DA": {
-        "prompt": 'Score the following translation from {source_lang} to {target_lang} on a continuous scale from 0 to 100, where a score of zero means "no meaning preserved" and score of one hundred means "perfect meaning and grammar".\n\n{source_lang} source: "{source_seg}"\n{target_lang} translation: "{target_seg}"\nScore: ',
+        "prompt": 'Score the following translation from {source_lang} to {target_lang} on a continuous scale from 0 to 100, where a score of zero means "no meaning preserved" and score of one hundred means "perfect meaning and grammar". Only return the numerical number that assess the quality nothing else..\n\n{source_lang} source: "{source_seg}"\n{target_lang} translation: "{target_seg}"\nScore: ',
         "validate_answer": lambda x: validate_number(x),
         "use_ref": False,
     },
     "GEMBA-DA_ref": {
-        "prompt": 'Score the following translation from {source_lang} to {target_lang} with respect to human reference on a continuous scale 0 to 100 where score of zero means "no meaning preserved" and score of one hundred means "perfect meaning and grammar".\n\n{source_lang} source: "{source_seg}"\n{target_lang} human reference: {reference_seg}\n{target_lang} machine translation: "{target_seg}"\nScore: ',
+        "prompt": 'Score the following translation from {source_lang} to {target_lang} with respect to human reference on a continuous scale 0 to 100 where score of zero means "no meaning preserved" and score of one hundred means "perfect meaning and grammar". Only return the numerical number that assess the quality nothing else..\n\n{source_lang} source: "{source_seg}"\n{target_lang} human reference: {reference_seg}\n{target_lang} machine translation: "{target_seg}"\nScore: ',
         "validate_answer": lambda x: validate_number(x),
         "use_ref": True,
     },
     "GEMBA-SQM": {
-        "prompt": 'Score the following translation from {source_lang} to {target_lang} on a continuous scale from 0 to 100 that starts on "No meaning preserved", goes through "Some meaning preserved", then "Most meaning preserved and few grammar mistakes", up to "Perfect meaning and grammar".\n\n{source_lang} source: "{source_seg}"\n{target_lang} translation: "{target_seg}"\nScore (0-100): ',
+        "prompt": 'Score the following translation from {source_lang} to {target_lang} on a continuous scale from 0 to 100 that starts on "No meaning preserved", goes through "Some meaning preserved", then "Most meaning preserved and few grammar mistakes", up to "Perfect meaning and grammar". Only return the numerical number that assess the quality nothing else..\n\n{source_lang} source: "{source_seg}"\n{target_lang} translation: "{target_seg}"\nScore (0-100): ',
         "validate_answer": lambda x: validate_number(x),
         "use_ref": False,
     },
     "GEMBA-SQM_ref": {
-        "prompt": 'Score the following machine translation from {source_lang} to {target_lang} with respect to the human reference on a continuous scale from 0 to 100 that starts with "No meaning preserved", goes through "Some meaning preserved", then "Most meaning preserved and few grammar mistakes", up to "Perfect meaning and grammar".\n\n{source_lang} source: "{source_seg}"\n{target_lang} human reference: "{reference_seg}"\n{target_lang} machine translation: "{target_seg}"\nScore (0-100): ',
+        "prompt": 'Score the following machine translation from {source_lang} to {target_lang} with respect to the human reference on a continuous scale from 0 to 100 that starts with "No meaning preserved", goes through "Some meaning preserved", then "Most meaning preserved and few grammar mistakes", up to "Perfect meaning and grammar". Only return the numerical number that assess the quality nothing else..\n\n{source_lang} source: "{source_seg}"\n{target_lang} human reference: "{reference_seg}"\n{target_lang} machine translation: "{target_seg}"\nScore (0-100): ',
         "validate_answer": lambda x: validate_number(x),
         "use_ref": True,
     },
     "GEMBA-stars": {
-        "prompt": 'Score the following translation from {source_lang} to {target_lang} with one to five stars. Where one star means "Nonsense/No meaning preserved", two stars mean "Some meaning preserved, but not understandable", three stars mean "Some meaning preserved and understandable", four stars mean "Most meaning preserved with possibly few grammar mistakes", and five stars mean "Perfect meaning and grammar".\n\n{source_lang} source: "{source_seg}"\n{target_lang} translation: "{target_seg}"\nStars: ',
+        "prompt": 'Score the following translation from {source_lang} to {target_lang} with one to five stars. Where one star means "Nonsense/No meaning preserved", two stars mean "Some meaning preserved, but not understandable", three stars mean "Some meaning preserved and understandable", four stars mean "Most meaning preserved with possibly few grammar mistakes", and five stars mean "Perfect meaning and grammar". Only return the numerical number that assess the quality nothing else..\n\n{source_lang} source: "{source_seg}"\n{target_lang} translation: "{target_seg}"\nStars: ',
         "validate_answer": lambda x: validate_stars(x),
         "use_ref": False,
     },
     "GEMBA-stars_ref": {
-        "prompt": 'Score the following translation from {source_lang} to {target_lang} with respect to the human reference with one to five stars. Where one star means "Nonsense/No meaning preserved", two stars mean "Some meaning preserved, but not understandable", three stars mean "Some meaning preserved and understandable", four stars mean "Most meaning preserved with possibly few grammar mistakes", and five stars mean "Perfect meaning and grammar".\n\n{source_lang} source: "{source_seg}"\n{target_lang} human reference: "{reference_seg}"\n{target_lang} translation: "{target_seg}"\nStars: ',
+        "prompt": 'Score the following translation from {source_lang} to {target_lang} with respect to the human reference with one to five stars. Where one star means "Nonsense/No meaning preserved", two stars mean "Some meaning preserved, but not understandable", three stars mean "Some meaning preserved and understandable", four stars mean "Most meaning preserved with possibly few grammar mistakes", and five stars mean "Perfect meaning and grammar". Only return the numerical number that assess the quality nothing else..\n\n{source_lang} source: "{source_seg}"\n{target_lang} human reference: "{reference_seg}"\n{target_lang} translation: "{target_seg}"\nStars: ',
         "validate_answer": lambda x: validate_stars(x),
         "use_ref": True,
     },
@@ -164,7 +165,7 @@ prompts = {
         "max_tokens": 100,
     },
     "POSTEDIT": {  # This will get a hyp and src text for translation and suggest a post-edit for the hyp
-        "prompt": 'Generate a post-edit for the following machine translation from {source_lang} to {target_lang}.\n\n{source_lang} source: "{source_seg}"\n{target_lang} machine translation: "{target_seg}"\nPost-edit: ',
+        "prompt": 'Generate a post-edit for the following machine translation  in order to improve the quality. The translation is from {source_lang} to {target_lang}.\n\n{source_lang} source: "{source_seg}"\n{target_lang} machine translation: "{target_seg}"\nPost-edit: ',
         "use_ref": False,
         "validate_answer": lambda x: x,
         "max_tokens": 100,
