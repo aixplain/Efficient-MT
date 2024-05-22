@@ -102,7 +102,7 @@ language_codes = {
 
 def get_best_translation_propmt(source_seg, mts, source_lang, target_lang):
     # prepate a propmt string that will be used for selecting the best translation as the id of the translation
-    prompt = f'Please select the best translation from {source_lang} to {target_lang}.\n\n{source_lang} source: "{source_seg}. Return only integer index of the MT"\n\n'
+    prompt = f'Please select the best translation from {source_lang} to {target_lang}.\n\n{source_lang} source: "{source_seg}. Return only integer index of the MT nothing more nothing less."\n\n'
     for i, mt in enumerate(mts):
         prompt += f'MT ID: {i} -> Translation: "{mt}"\n'
     prompt += f"\nBest MT ID:"
